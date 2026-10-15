@@ -1,0 +1,221 @@
+{
+  "cleanupPeriodDays": 90,
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc *)",
+      "Bash(gh pr merge *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npm outdated *)",
+      "Bash(npm update *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(python -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(git config *)",
+      "Bash(npx next *)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)",
+      "Bash(npx playwright *)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "Read(//c/Program Files/**)",
+      "PowerShell(Get-Command code -ErrorAction SilentlyContinue)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(npx web-push *)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
+      "Bash(netstat -ano)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3001 -State Listen -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue)",
+      "Bash(npx tsx *)",
+      "Read(//tmp/**)",
+      "PowerShell(Get-Process -Name \"node\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process -Name \"tsx\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3001 -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(npx vitest *)",
+      "Bash(node_modules/.bin/playwright install *)",
+      "Bash(node_modules/.bin/playwright --version)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3001 -State Listen)"
+    ],
+    "defaultMode": "auto"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_DIR>\\hooks\\scan-secrets.ps1\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_DIR>\\hooks\\block-push-main.ps1\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_DIR>\\hooks\\block-dangerous-cmd.ps1\""
+          },
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\block-tests.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\checkpoint.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\block-readonly-paths.js\""
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_DIR>\\hooks\\warn-insecure-patterns.ps1\""
+          },
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\loop-block-edits.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\scope-lock.js\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell|mcp__.*(playwright|chrome-devtools).*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\loop-count.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\lint-edited-file.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\instruction-size.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\review-checkpoint.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\scope-lock.js\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\context-md-reminder.js\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<CLAUDE_DIR>\\hooks\\review-checkpoint.js\""
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": false,
+    "security-guidance@claude-plugins-official": true,
+    "vercel@claude-plugins-official": false,
+    "remember@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "42crunch-api-security-testing@claude-plugins-official": false,
+    "skill-creator@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": false,
+    "plugin-dev@claude-plugins-official": false,
+    "frontend-design@claude-plugins-official": true,
+    "neon@claude-plugins-official": false,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "slack@claude-plugins-official": false,
+    "posthog@claude-plugins-official": false,
+    "code-review@claude-plugins-official": true,
+    "claude-security@claude-plugins-official": true,
+    "understand-anything@understand-anything": false,
+    "mattpocock-skills@claude-plugins-official": false,
+    "greptile@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "understand-anything": {
+      "source": {
+        "source": "github",
+        "repo": "Egonex-AI/Understand-Anything"
+      }
+    }
+  },
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "tui": "fullscreen",
+  "autoMemoryEnabled": true,
+  "theme": "dark",
+  "autoCompactEnabled": true,
+  "remoteControlAtStartup": false,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
+}

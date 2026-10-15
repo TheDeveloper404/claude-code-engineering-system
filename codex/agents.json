@@ -1,0 +1,12 @@
+{
+  "_comment": "Codex sandbox per agent (install.mjs). Reviewers and advisors are read-only; agents that write tests or infra get workspace-write.",
+  "sandbox_mode": {
+    "architect": "read-only",
+    "code-reviewer": "read-only",
+    "performance-engineer": "read-only",
+    "researcher": "read-only",
+    "security-engineer": "read-only",
+    "qa-tester": "workspace-write",
+    "devops-engineer": "workspace-write"
+  }
+}
