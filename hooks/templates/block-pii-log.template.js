@@ -1,20 +1,21 @@
 // ============================================================================
-// TEMPLATE — NU e activ global. Copiază-l în `.claude/hooks/` al unui proiect
-// care procesează date personale (PII) și ADAPTEAZĂ cele două regex-uri + calea.
+// TEMPLATE — NOT active globally. Copy it into `.claude/hooks/` of a project that
+// processes personal data (PII) and ADAPT the two regexes + the path.
 //
-// Înregistrare în `.claude/settings.json` al proiectului:
+// Register it in the project's `.claude/settings.json`:
 //   "PreToolUse": [
 //     { "matcher": "Edit|Write|MultiEdit",
 //       "hooks": [{ "type": "command", "command": "node .claude/hooks/block-pii-log.js" }] }
 //   ]
 //
-// Ce face: blochează (exit 2) introducerea de apeluri de log care conțin variabile
-// cu PII. Logăm DOAR metadate ({ err, status, mime, count, userId.slice(0,8) }), nu conținut.
+// What it does: blocks (exit 2) new log calls that contain PII variables. Log ONLY metadata
+// ({ err, status, mime, count, userId.slice(0,8) }), never content.
+// Example: `logger.info({ messageText })` is blocked; `logger.info({ status, count })` passes.
 //
-// CE TREBUIE SĂ ADAPTEZI PER PROIECT:
-//   1. Calea sursă monitorizată  → vezi `SRC_PATH` mai jos (ex. /apps/api/src/, /src/).
-//   2. `RISKY` regex             → numele variabilelor/câmpurilor cu PII din proiectul tău.
-//      (Exemplul de mai jos e dintr-un proiect WhatsApp: mesaje + imagini vision.)
+// WHAT TO ADAPT PER PROJECT:
+//   1. The watched source path → `SRC_PATH` below (e.g. /apps/api/src/, /src/).
+//   2. The `RISKY` regex       → the names of the PII variables/fields in your project.
+//      (The example below is for a chat-message bot: message text + images.)
 // ============================================================================
 const fs = require('fs');
 
@@ -23,7 +24,7 @@ try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (e) { process.exit
 
 const ti = input.tool_input || {};
 
-// Adună tot textul nou (Edit: new_string · Write: content · MultiEdit: edits[].new_string)
+// Collect all new text (Edit: new_string · Write: content · MultiEdit: edits[].new_string)
 const chunks = [];
 if (typeof ti.new_string === 'string') chunks.push(ti.new_string);
 if (typeof ti.content === 'string') chunks.push(ti.content);
@@ -34,14 +35,14 @@ if (!text) process.exit(0);
 
 const fp = (ti.file_path || '').replace(/\\/g, '/');
 
-// (1) ADAPTĂ: doar fișierele sursă unde curge PII-ul.
+// (1) ADAPT: only the source files where PII flows.
 const SRC_PATH = /\/apps\/api\/src\//;
 if (fp && !SRC_PATH.test(fp)) process.exit(0);
 if (/\.(test|spec)\.[tj]sx?$/.test(fp)) process.exit(0);
 
 const LOG = /(console|logger|req\.log|fastify\.log|app\.log|this\.log)\.(log|info|debug|warn|error|trace|fatal)\s*\(/i;
 
-// (2) ADAPTĂ: numele variabilelor/câmpurilor cu PII din proiectul tău.
+// (2) ADAPT: the names of the PII variables/fields in your project.
 const RISKY = /(imageBase64|base64Image|imageData|imageBuffer|visionImage|messageText|msgText|\.conversation\b|\.caption\b|extendedTextMessage|messageContent|rawMessage|req\.body|request\.body|pushName)/i;
 
 const hits = [];
@@ -51,10 +52,10 @@ for (const line of text.split('\n')) {
 
 if (hits.length) {
   process.stderr.write(
-    'BLOCAT — posibil PII în log (conținutul mesajelor/imaginilor NU se loghează):\n\n' +
+    'BLOCKED — possible PII in a log call (message/image content is NEVER logged):\n\n' +
     hits.map(h => '  ' + h).join('\n') +
-    '\n\nLoghează DOAR metadate ({ err, status, mime, count, userId.slice(0,8) }), nu conținutul.\n' +
-    'Dacă e fals-pozitiv intenționat, scoate variabila din apelul de log sau ajustează hook-ul.'
+    '\n\nLog ONLY metadata ({ err, status, mime, count, userId.slice(0,8) }), not the content.\n' +
+    'If this is a deliberate false positive, remove the variable from the log call or adjust the hook.'
   );
   process.exit(2);
 }

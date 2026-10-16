@@ -1,8 +1,9 @@
-// SessionStart (global, orice proiect)
-// Utilizatorul a semnalat 2026-09-12: CONTEXT.md e o convenție, nu o garanție -- depinde 100% ca
-// Claude sa-si aminteasca sa-l deschida. Acest hook nu rezolva asta cu memorie (uitabila), ci
-// mecanic: la pornirea sesiunii, daca proiectul curent are un CONTEXT.md, il semnaleaza.
-// Nu ii toarna continutul (ar anula exact rostul CONTEXT.md -- tinut AFARA contextului implicit).
+// SessionStart (global, any project)
+// Why: CONTEXT.md is a convention, not a guarantee — it only helps if the agent remembers to open
+// it. This hook doesn't rely on memory: at session start, if the current project has a CONTEXT.md,
+// it points it out. It does NOT inject the content (that would defeat the purpose of CONTEXT.md,
+// which is kept OUT of the default context).
+// Example output: "This project has a CONTEXT.md (5.8 KB) at D:\work\shop\CONTEXT.md. ..."
 const fs = require("fs");
 const path = require("path");
 
@@ -18,6 +19,6 @@ try {
     "</context-md-reminder>\n"
   );
 } catch {
-  // fara CONTEXT.md in acest proiect, sau eroare de citire -- nu blocam, nu semnalam nimic
+  // no CONTEXT.md in this project, or a read error -- don't block, don't report anything
 }
 process.exit(0);

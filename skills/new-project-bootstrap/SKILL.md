@@ -1,6 +1,6 @@
 ---
 name: new-project-bootstrap
-description: Use when starting a brand-new project from scratch — before the first feature, on or around the first commit, when scaffolding a repo, or when the user says "proiect nou" / "hai să începem ceva de la zero". Sets up the same day-0 scaffolding every real project here ends up needing anyway (CI, docs, branching, backlog) instead of bolting it on later, one incident at a time.
+description: Use when starting a brand-new project from scratch — before the first feature, on or around the first commit, when scaffolding a repo, or when the user says "new project" / "let's start something from scratch". Sets up the same day-0 scaffolding every real project here ends up needing anyway (CI, docs, branching, backlog) instead of bolting it on later, one incident at a time.
 ---
 
 # New Project — Day 0 Playbook

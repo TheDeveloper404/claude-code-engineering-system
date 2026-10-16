@@ -1,15 +1,17 @@
 // PostToolUse / Edit|Write|MultiEdit  (GLOBAL)
-// După editarea unui fișier JS/TS, rulează ESLint pe DOAR acel fișier (rapid, single-file)
-// ca să prindă regulile pe care `tsc --noEmit` NU le vede (ex. react/no-unescaped-entities,
-// no-unused-vars cu config-ul proiectului) ÎNAINTE să pice un build/CI (ex. Vercel).
+// After an edit to a JS/TS file, run ESLint on ONLY that file (fast, single-file) to catch the
+// rules `tsc --noEmit` does NOT see (e.g. react/no-unescaped-entities, no-unused-vars with the
+// project's config) BEFORE they fail a build/CI.
+// Example: an apostrophe written raw in JSX passes tsc but fails `next build` on
+// react/no-unescaped-entities — this hook reports it right after the edit.
 //
-// Generic: nu presupune nicio structură de proiect. Urcă din directorul fișierului editat
-// până găsește cel mai apropiat `node_modules/eslint` și rulează ESLint din acel director,
-// ca să se rezolve corect config-ul (flat sau legacy) al proiectului respectiv.
+// Generic: assumes no project structure. Walks up from the edited file's directory to the
+// nearest `node_modules/eslint` and runs ESLint from there, so the project's own config
+// (flat or legacy) is resolved.
 //
-// ESLint --quiet => doar erorile blochează (warnings ignorate).
-// exit 2 = arată erorile lui Claude (editarea e deja aplicată, le repară).
-// Orice eroare internă / lipsă ESLint = exit 0 (NU blocăm munca reală, nu spargem sesiunea).
+// ESLint --quiet => only errors block (warnings ignored).
+// exit 2 = shows the errors to the agent (the edit is already applied; it fixes them).
+// Any internal error / no ESLint = exit 0 (never block real work, never break the session).
 const fs   = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -26,12 +28,12 @@ if (!filePath) process.exit(0);
 
 const norm = filePath.replace(/\\/g, '/');
 
-// Doar fișiere sursă lintabile. Sărim peste artefacte/dependențe.
+// Only lintable source files. Skip build output and dependencies.
 if (!/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(norm)) process.exit(0);
 if (/\/(node_modules|\.next|dist|build|out|coverage|\.turbo)\//.test(norm)) process.exit(0);
 
-// Urcă din directorul fișierului până găsești node_modules/eslint/bin/eslint.js.
-// Directorul care conține acel node_modules devine cwd-ul ESLint (ca să prindă config-ul).
+// Walk up from the file's directory to node_modules/eslint/bin/eslint.js.
+// The directory holding that node_modules becomes ESLint's cwd (so it picks up the config).
 function findEslint(startDir) {
   let dir = startDir;
   // eslint-disable-next-line no-constant-condition
@@ -39,7 +41,7 @@ function findEslint(startDir) {
     const candidate = path.join(dir, 'node_modules', 'eslint', 'bin', 'eslint.js');
     if (fs.existsSync(candidate)) return { eslintJs: candidate, cwd: dir };
     const parent = path.dirname(dir);
-    if (parent === dir) return null; // am ajuns la rădăcina discului
+    if (parent === dir) return null; // reached the drive root
     dir = parent;
   }
 }
@@ -52,10 +54,10 @@ try {
 }
 
 const found = findEslint(path.dirname(absFile));
-if (!found) process.exit(0); // proiectul n-are ESLint instalat → nu blocăm nimic
+if (!found) process.exit(0); // the project has no ESLint installed → block nothing
 
-// Forward slashes: pe Windows ESLint nu rezolvă căi cu backslash (le tratează ca glob)
-// și întoarce "no files matched" → eroarea ar fi înghițită silențios.
+// Forward slashes: on Windows ESLint doesn't resolve backslash paths (it treats them as globs)
+// and returns "no files matched" → the error would be swallowed silently.
 const relFile = path.relative(found.cwd, absFile).replace(/\\/g, '/');
 
 const res = spawnSync(
@@ -64,14 +66,14 @@ const res = spawnSync(
   { cwd: found.cwd, encoding: 'utf8', timeout: 60000 }
 );
 
-// ESLint exit codes: 0 = clean, 1 = erori reale (cu --quiet), 2 = ESLint a crăpat / config invalid.
+// ESLint exit codes: 0 = clean, 1 = real errors (with --quiet), 2 = ESLint crashed / invalid config.
 if (res.status === 1) {
   const out = ((res.stdout || '') + (res.stderr || '')).trim();
   process.stderr.write(
-    'ESLint a găsit erori în fișierul pe care tocmai l-ai editat (astea pică `lint` / build-ul CI):\n\n' +
-    out + '\n\nRepară-le înainte de a considera gata.'
+    'ESLint found errors in the file you just edited (these fail `lint` / the CI build):\n\n' +
+    out + '\n\nFix them before calling the task done.'
   );
   process.exit(2);
 }
 
-process.exit(0); // clean, sau ESLint însuși a eșuat → niciodată nu blocăm munca reală
+process.exit(0); // clean, or ESLint itself failed → never block real work

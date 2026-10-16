@@ -1,6 +1,6 @@
 ---
 name: done
-description: Use at the END of any implementation task — before declaring it finished, before writing the commit message, or when the user says "done", "gata", "unde e testul", "ready to commit". Runs the per-task Definition-of-Done gate from the global working mode — classification stated, test proportional to it (run now, not deferred), build/type-check if types moved, perf sanity, CHANGELOG, schema migration, suggested commit message — and ends with a PASS / GAPS verdict instead of a silent "done".
+description: Use at the END of any implementation task — before declaring it finished, before writing the commit message, or when the user says "done", "finished", "where is the test?", "ready to commit". Runs the per-task Definition-of-Done gate from the global working mode — classification stated, test proportional to it (run now, not deferred), build/type-check if types moved, perf sanity, CHANGELOG, schema migration, suggested commit message — and ends with a PASS / GAPS verdict instead of a silent "done".
 ---
 
 # Done?! — the task-closer gate
@@ -15,7 +15,7 @@ silently paper over a gap. An unmet item is reported, not hidden.
 
 ## When this applies
 - Any NORMAL or CRITICAL task, right before you call it done.
-- The user signals closure: "done", "gata", "ready to commit", "unde e testul".
+- The user signals closure: "done", "finished", "ready to commit", "where is the test?".
 - A feature/fix is implemented and you are about to write the delivery summary.
 
 ## When this does NOT apply
@@ -58,8 +58,9 @@ silently paper over a gap. An unmet item is reported, not hidden.
    the project's DB rules (e.g. Neon: raw SQL for dev first, then prod). Never `db:push` or
    `db:migrate` from the terminal.
 
-7. **Suggested commit message** left for the user. They commit from VS Code Source Control —
-   give them the message text, not git commands. Never commit or push on your own initiative.
+7. **Suggested commit message** left for the user, who commits (e.g. from their IDE's source control
+   panel) — give them the message text, not git commands. Never commit or push on your own initiative.
+   *Example:* `fix(orders): show prices with VAT in the orders list`.
 
 ## Close-out
 

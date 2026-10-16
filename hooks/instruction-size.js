@@ -1,11 +1,13 @@
 // PostToolUse / Edit|Write|MultiEdit (Claude Code) + apply_patch (Codex)  (GLOBAL)
-// După editarea unui fișier de instrucțiuni încărcat mereu (CLAUDE.md, AGENTS.md, rules/*.md
-// fără `paths:`), avertizează dacă a trecut de 200 de rânduri. Doar avertisment (exit 0).
+// After an edit to an always-loaded instruction file (CLAUDE.md, AGENTS.md, rules/*.md without
+// `paths:`), warn if it went past 200 lines. Warning only (exit 0).
+// Why: a long instruction file is followed less reliably; e.g. a 350-line CLAUDE.md where the rule
+// on line 300 keeps getting ignored. Move single-area sections to rules/ or CONTEXT.md.
 //
-// Claude Code dă un singur tool_input.file_path; Codex apply_patch dă un blob V4A în
-// tool_input.command, cu posibil mai multe fișiere ("*** Add File:" / "*** Update File:").
-// Avertismentul merge ca additionalContext (Codex nu suportă `ask`, doar additionalContext/deny).
-// Orice eroare internă = exit 0 (nu stricăm sesiunea).
+// Claude Code gives a single tool_input.file_path; Codex apply_patch gives a V4A blob in
+// tool_input.command, possibly with several files ("*** Add File:" / "*** Update File:").
+// The warning goes out as additionalContext (Codex doesn't support `ask`, only additionalContext/deny).
+// Any internal error = exit 0 (never break the session).
 const fs = require('fs');
 const path = require('path');
 
@@ -32,7 +34,7 @@ function isAlwaysLoaded(file, text) {
   const base = path.basename(norm);
   if (base === 'CLAUDE.md' || base === 'AGENTS.md') return true;
   if (/\/rules\/[^/]+\.md$/.test(norm)) {
-    // rules/*.md cu `paths:` în frontmatter se încarcă la cerere, nu le verificăm
+    // rules/*.md with `paths:` in the frontmatter load on demand, so they are not checked
     if (!text.startsWith('---')) return true;
     const end = text.indexOf('\n---', 3);
     return !(end !== -1 && /^paths\s*:/m.test(text.slice(0, end)));
@@ -48,15 +50,15 @@ for (const f of files) {
     const text = fs.readFileSync(abs, 'utf8');
     if (!isAlwaysLoaded(abs, text)) continue;
     const lines = text.split('\n').length - (text.endsWith('\n') ? 1 : 0);
-    if (lines > MAX_LINES) over.push(`${abs} (${lines} rânduri)`);
-  } catch (e) { /* ignorăm */ }
+    if (lines > MAX_LINES) over.push(`${abs} (${lines} lines)`);
+  } catch (e) { /* ignore */ }
 }
 
 if (over.length === 0) process.exit(0);
 
 const msg =
-  `Fișier de instrucțiuni peste ${MAX_LINES} de rânduri: ${over.join('; ')}. ` +
-  `Un fișier lung e respectat mai slab — mută secțiunile de o singură zonă în rules/ sau CONTEXT.md.`;
+  `Instruction file over ${MAX_LINES} lines: ${over.join('; ')}. ` +
+  `A long file is followed less reliably — move single-area sections to rules/ or CONTEXT.md.`;
 console.log(JSON.stringify({
   hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: msg },
 }));

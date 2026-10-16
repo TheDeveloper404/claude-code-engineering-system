@@ -7,7 +7,7 @@
 // `scope-set.js` itself does nothing: this hook sees the Bash command (with session_id, which a
 // Bash command cannot know) and records the level. Re-classifying resets plan approval.
 // State: <config>/.hook-state/scope/<session_id>.json — outside any repo.
-// Active in EVERY project (global since 2026-10-10; before that opt-in via `.claude/scope-lock.on`, now ignored).
+// Active in EVERY project (a legacy `.claude/scope-lock.on` opt-in marker is ignored).
 // Kill switch: <config>/.hook-state/scope-lock.off. Any internal error = exit 0 (never block real work).
 // exit 2 = block (stderr is shown to Claude).
 const fs = require('fs');

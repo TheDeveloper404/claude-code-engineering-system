@@ -14,7 +14,7 @@ Claude auto-loads a skill when the task matches its `description`; you can also 
 | **clean-architecture** | structure a new feature, refactor, define an API contract, decide layering (Controller→Service→Repository), apply SOLID | `SW_PRINCIPLES.md` + `architect.md` |
 | **ui-ux-review** | build/review UI — components, pages, forms, tables, modals, dashboards; edit `.tsx`/`.jsx` | `UI_UX_RULES.md` |
 | **recover** | you're stuck / thrashing — "still failing", tried it N times, `loop-block-edits` blocked you, code runs but is wrong | classify failure BEFORE reacting (M1 bug / M2 polluted session / M3 wrong foundation) |
-| **Done?!** (`/done`) | you're about to declare a task finished — "done", "gata", "unde e testul", "ready to commit" | per-task SDLC flow + Definition of Done from global `CLAUDE.md` |
+| **Done?!** (`/done`) | you're about to declare a task finished — "done", "finished", "where is the test?", "ready to commit" | per-task SDLC flow + Definition of Done from global `CLAUDE.md` |
 | context7-mcp | ask about a library/framework/API — fetch current docs | (MCP wrapper) |
 
 Each skill ends with a short **verdict** (`PASS` / `FINDINGS`), not an essay, to keep context lean.

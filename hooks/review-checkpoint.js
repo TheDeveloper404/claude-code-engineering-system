@@ -1,13 +1,14 @@
 // PostToolUse / Edit|Write|MultiEdit|Skill + UserPromptSubmit  (GLOBAL — every project)
 // Mechanical counter: "how much production code has changed since the last real
-// /code-review". Originated 2026-07-16 in a client project after a repeat SDLC-rule miss (memory
-// alone didn't hold); promoted here 2026-07-26 to apply everywhere, not just one project.
+// /code-review". Why: a rule like "review before merging" is easy to forget during a long feature;
+// a counter doesn't forget. Example: after 20 edits to app/ without a review, the next edit is
+// blocked until `/code-review` runs.
 // - Edit/Write/MultiEdit on production code (app/, server/, components/, lib/, db/) INCREMENTS.
 //   Projects without these dirs simply never match — no-op, never false-blocks.
 // - Invoking the `code-review` skill/command RESETS the counter to 0.
 // - Over threshold → block (exit 2), demand a real /code-review before continuing.
 //
-// BUG fixed 2026-08-07: the reset only ever fired on `PostToolUse:Skill` with
+// Why the reset also listens to UserPromptSubmit: the reset used to fire only on `PostToolUse:Skill` with
 // tool_input.skill matching /code-review/i — but the `code-review` skill has
 // disable-model-invocation, so it NEVER runs as a Skill tool call the assistant makes; it only
 // runs as a user-typed `/code-review` slash command, dispatched by the harness directly (forked
@@ -19,8 +20,8 @@
 // State is per-project (.claude/.hook-state/ under the REPO ROOT), so each project keeps its
 // own independent counter.
 //
-// The state path is anchored to the git root, NOT to process.cwd() — fixed 2026-08-04 after
-// the counter blocked forever in one project. There, the Next app lives in a
+// The state path is anchored to the git root, NOT to process.cwd(). Example of why: in a repo
+// where the Next.js app lives in a
 // subdirectory, so the reset (fired with cwd = subproject) and the increments (fired with
 // cwd = repo root) wrote to two DIFFERENT files: the reset never reached the counter that
 // was blocking. Anchoring to the repo root makes both sides agree regardless of cwd.
@@ -55,10 +56,10 @@ const REPO_ROOT = findRepoRoot(process.cwd());
 const STATE_DIR = path.join(REPO_ROOT, '.claude', '.hook-state');
 const STATE_FILE = path.join(STATE_DIR, 'review-checkpoint-count.txt');
 
-// Per-repo opt-out (2026-08-09): presence of this marker file disables the checkpoint for THIS
-// repo only — other projects using the same global hook are unaffected. Scoped, reversible: delete
-// the marker to re-enable. Used when a user explicitly asks to defer /code-review to the end of a
-// large feature instead of every 20 changes (e.g. one large feature, 2026-08-09).
+// Per-repo opt-out: presence of this marker file disables the checkpoint for THIS repo only —
+// other projects using the same global hook are unaffected. Scoped, reversible: delete the marker
+// to re-enable. Example: the user wants ONE /code-review at the end of a large feature instead of
+// one every 20 changes → create `.claude/.hook-state/review-checkpoint-disabled` in that repo.
 const DISABLE_MARKER = path.join(STATE_DIR, 'review-checkpoint-disabled');
 if (fs.existsSync(DISABLE_MARKER)) process.exit(0);
 
@@ -87,7 +88,7 @@ function writeCount(n) {
 }
 
 // User typed the `/code-review` slash command -> reset. This is the path that ACTUALLY fires in
-// practice (see the 2026-08-07 note above) since the skill can't be invoked as a Skill tool call.
+// practice (see the UserPromptSubmit note above) since the skill can't be invoked as a Skill tool call.
 if (input.hook_event_name === 'UserPromptSubmit') {
   const prompt = (input.prompt || '').trim();
   if (/^\/code-review\b/i.test(prompt)) {

@@ -9,14 +9,13 @@ paths:
 
 # Test authoring (global, path-scoped — loads when a test file is opened)
 
-> Moved out of the global `CLAUDE.md` and `rules/working-style.md` on 2026-10-09 to keep the always-loaded
-> instructions under 200 lines per file; text unchanged. Read it before PLANNING tests too, not only once
-> a test file is open.
+> Kept out of the always-loaded `CLAUDE.md` so it loads only when a test file is opened. Read it before
+> PLANNING tests too, not only once a test file is open.
 
-## E2E/authz test authoring (mandatory — same status as the SDLC flow; user decision 2026-08-09)
+## E2E/authz test authoring (mandatory — same status as the SDLC flow)
 > Why: code and the test that validates it come out of the SAME mental model of the feature. If that
 > model has a gap, the gap reproduces identically in the test — it stops being an independent check and
-> becomes an echo. Two real cases on one client project's feature, same session: an assertion of
+> becomes an echo. Two examples from one feature: an assertion of
 > `expect(res.status()).toBe(404)` on a route with `loading.tsx` (Next.js commits 200+noindex once
 > streaming starts after `notFound()` — documented framework behavior, written from assumption, not
 > checked); and a test exercising an authorization rule with the wrong actor, because the scenario was

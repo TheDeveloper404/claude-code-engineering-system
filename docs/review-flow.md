@@ -1,14 +1,15 @@
 # Review/audit flow — full procedure (read before ANY review or audit)
 
-> Moved out of the global `CLAUDE.md` on 2026-10-09 to keep that file under 200 lines; text unchanged.
-> `CLAUDE.md` keeps a short summary and points here. Read this file before running `/code-review`,
-> `security-audit`, or a reviewer subagent (`code-reviewer`, `security-engineer`).
+> `CLAUDE.md` keeps a short summary and points here (kept separate so `CLAUDE.md` stays under 200
+> lines). Read this file before running `/code-review`, `security-audit`, or a reviewer subagent
+> (`code-reviewer`, `security-engineer`).
 
-## Review/audit flow (mandatory — same status as the SDLC flow; user decision 2026-08-09)
-> Why: on a client project's feature I ran SIX incremental `/code-review` rounds on in-progress code,
-> and each round I both reported findings AND immediately applied my own fixes in the same breath. The
-> user never got to triage. Result: 6 rounds instead of 2, patched-up code, and severities communicated
-> as if every finding were a breach at NASA. A review PRODUCES A LIST; it does not silently fix.
+## Review/audit flow (mandatory — same status as the SDLC flow)
+> Why: a review that fixes as it goes takes the decision away from the user. Example: an agent runs
+> six incremental `/code-review` rounds on a feature still being written, and in each round it reports
+> findings and applies its own fixes in the same message. The user never gets to triage; the result is
+> six rounds instead of two, patched-up code, and every finding described as a major breach.
+> A review PRODUCES A LIST; it does not silently fix.
 
 **When to review:** on a large feature, ONE `/code-review` at high effort over the COMPLETE diff — never
 incremental passes over code still being written. A mechanical counter (`review-checkpoint` hook) does not
