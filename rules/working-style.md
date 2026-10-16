@@ -7,10 +7,6 @@ win — see "Conflict resolution" in the global CLAUDE.md.
 
 ---
 
-## Language
-- **Reply in English** *(user's decision 2026-10-12, replaces "always Romanian" — Romanian diacritics cost more
-  tokens)*. Switch to Romanian only when the user asks for it (e.g. "spune în RO" when something is unclear). The user
-  may write in Romanian when he doesn't know how to say something in English — still answer in English.
 
 ## Pace and control (the most important)
 - **Approval on PLANS, not on steps** *(user's decision 2026-07-11, replaces the old per-step
